@@ -158,8 +158,16 @@
 			name: "Tribal Leader, slightly impressed",
 			start: {
 				text: "Huh...so you did it. You killed the clone of myself.",
-				options: []
+				options: [ {text: "Your clone dropped this chain...", next: "chain"} ]
 				},
+			chain: {
+				text: "Oh my....oh now that is interesting. Would you allow me to...see it for a moment?",
+				options: [ {text: "Allow", next: "allowChain"} ]
+			},
+			allowChain: {
+				text: "You gave me the chain",
+				options: []
+			}
 		};
 		
 		let HouseExterior = {
@@ -337,7 +345,7 @@
 																}
 																
 																
-																EntityList[i].remove();					
+																EntityList[i].urlFolder = "WendigoDeath";			
 																	conversationTree = FreshKill;
 																	conversationNode = "start";
 																	UpdateUI();
@@ -672,17 +680,20 @@
 					this.roomOneButton.innerHTML = "Generate Room One (EMPTY)";
 					this.roomOneButton.style.backgroundColor = "#FFA2A2";
 					
-					<!-- this.roomOneButton.onclick = function(){ -->
-							<!-- if(EntityList[0]){ -->
-								<!-- EntityList[1] = new Entity("Wendigoo", 200, 200, 400, "Monster", "Big Bad John"); -->
-								<!-- EntityList[1].targetedPos = { x: 200, y: 200 }; -->
-								<!-- EntityList[1].facedDirection = "right"; -->
-								<!-- EntityList[1].attackPower = 2; -->
-							<!-- }else { -->
-								<!-- console.log("Try spawning the player first..."); -->
-							<!-- }; -->
+					this.roomOneButton.onclick = function(){
+							if(EntityList[0]){
+								EntityList[1] = new Entity("Wendigoo", 200, 200, 400, "Monster", "Big Bad John");
+								EntityList[1].targetedPos = { x: 200, y: 200 };
+								EntityList[1].facedDirection = "right";
+								EntityList[1].attackPower = 2;
+								
+								EntityList[0].x = 600; EntityList[0].y = 200;
+								EntityList[0].targetedPos = {x:600, y:200};
+							}else {
+								console.log("Try spawning the player first...");
+							};
 						
-					<!-- }; -->
+					};
 					
 					this.element.appendChild(this.roomOneButton);
 					
@@ -704,26 +715,8 @@
 					
 					this.roomThreeButton.onclick = function(){
 					
-					document.body.style.backgroundImage = "url(FunBackground.png)";
 							if(EntityList[0]){
-								EntityList[1] = new Entity("Wendigoo", 600, 100, 400, "Monster", "Jail Guard");
-								EntityList[1].targetedPos = {x:600, y:100};
-								EntityList[1].facedDirection = "Left";
-								EntityList[1].attackPower = 2;
-								
 							
-								EntityList[2] = new Entity("Wendigoo", 600, 600, 400, "Monster", "Jail guard");
-								EntityList[2].targetedPos = {x:600, y:600};
-								EntityList[2].facedDirection = "Left";
-								EntityList[2].attackPower = 2;
-								
-									
-								EntityList[3] = new Entity("Wendigoo", 1280, 175, 400, "NPC", "Prisoner");
-								EntityList[3].targetedPos = {x: 1280, y:175};
-								EntityList[3].facedDirection = "Front";
-								EntityList[3].attackPower = 1;
-									
-									EntityList[3].conversationTree = { start: "Huh? You killed those damn guards?? Thanks! I appreciate it!" };
 							}else {
 								console.log("Try spawning the player first...");
 							};
@@ -915,7 +908,7 @@
 															const ConvertIndex = EntityList[0].inventory.find( ( {name} ) => name === "Gold");
 															console.log(ConvertIndex);
 															EntityList[0].inventory.splice(ConvertIndex, 1);
-															EntityList[0].attackPower = ConvertIndex.quantity;
+															EntityList[0].attackPower += ConvertIndex.quantity;
 															
 																InventoryDisplay.innerHTML = "Inventory : <br>";
 																for(let j = 0; j < EntityList[0].inventory.length; j++){
