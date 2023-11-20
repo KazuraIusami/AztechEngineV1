@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+	<style>
+	
+		body {
+			background-image: url('Background.png');
+		}
+		
+	.sprite {
+		position: absolute;
+		background-size: cover;
+		background-position: center;
+		
+	}
+		
+	.tooltip {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -60px;
+        /* center the tooltip */
+        opacity: 0;
+        transition: opacity 1s;
+    }
+
+    .sprite:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+	
+	
+	.contextMenu {
+		position: absolute;
+		bottom:0;
+		right:0;
+		width:30%;
+		height:30%;
+		margin: 20px;
+		background-color: #7C7C7C;
+		color: black;
+		opacity: 0.5;
+		z-index: 1;
+		transition: opacity 1s, background-color 1s, color 1s;
+		
+	}
+	.contextMenu:hover {
+		background-color: #3D3D3D;
+		color: white;
+		opacity: 1;
+	}
+	.contextMenu, p {
+		padding: 15px;
+	}
+	
+	.overlayDisplay {
+		position:absolute;
+		bottom: 0px;
+		right: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: #7C7C7C;
+		opacity: 70%;
+		z-index: -1;
+	}
+	.invDisplay {
+	
+	}
+		
+		
+	</style>
+	</head>
+	
+	<body>
+	
+	<script>
+	
+	//CONVERSATION TREES
+		let PreLoad = {
+			name: "Thank you!",
+			start: {
+				text: "For a better experience, please press F11 to go fullscreen. <br> Press Escape to open the Dev Menu, then Press 'Spawn Player.' Then, press 'Generate Room Five'. You are able to go into the house! Among other things:) Just go ahead!"
+			}
+		}
+		
+		let FreshKill = {
+			name: "I...I killed it.",
+				start: {
+					text: "Whatever that...thing...was. I killed it.",
+					options: []
+				}
+		}
+	
+		let InnerSanctum = {
+			name: "The Sacred Temple, Inner Sanctum",
+			start: {
+				
+				text: "<i>The hidden away core of the Sacred Temple. Very few are blessed (or cursed) enough to have the honor of seeing it.</i><br>The Information above is somehow known to you..although you arent sure how.",
+					options : [{text: "Notepad in your pocket", next: "list"}, {text: "Card displaying Gold", next: "goldCard"}]
+			},
+			list: {
+				text: "Pulling the notepad out of your front shirt pocket, flipping through the pages, you find nothing of value. <br> <i>Through broken pencil markings, maybe the work 'Lumen' is barely legible? It's still hard to tell</i>",
+				options : [{text: "back", next: "start"}]
+			},
+			goldCard: {
+				text: "In your front pants pocket is a slim, metal card with a display on the front. Multiple lines are visible, although only one is currently occupied.",
+				options: []
+			}
+		
+		}
+		
+		let InnerHall = {
+			name: "The Sacred Temple, Inner Hall",
+			start: {
+				
+				text: "Hall leading to the Inner Sanctum",
+					options : []
+			}
+		
+		}
+		
+		let TribalLeader = {
+			name: "Tribal Leader",
+			start: {
+				text: "So it seems you've gotten this far. Great!",
+				options: [{text: "Who are you?", next: "WendigoGreet"}],
+				
+			},
+			WendigoGreet: {
+				text: "You can call me Wendigo. I can serve as the Judge, Jury, and Executioner of your experience here.",
+				options: [{text: "Will You Spawn a Clone of yourself that I can fight?", next: "SpawnClone"}, {text: "I wish to dress as you", next: "Disguise"}, { text:" I wish to convert my gold to attack power", next: "Convert"},{text: "Back", next: "start"}]
+			},
+			SpawnClone: {
+				text: "Ah! A hasty one arent you? Alright, give it your best shot.",
+				options: [{text: "Back", next: "start"}],
+			},
+			Disguise: {
+				text: "Welcome to our commune, brother",
+				options: []
+			},
+			Convert: {
+				text: "As you wish...",
+				options: [{text: "Back", next: "start"}]
+			}
+			
+		}
+		
+		let ImpressedTribalLeader = {
+			name: "Tribal Leader, slightly impressed",
+			start: {
+				text: "Huh...so you did it. You killed the clone of myself.",
+				options: []
+				},
+		};
+		
+		let HouseExterior = {
+			name: "Stumbled on a house in the woods",
+			start: {
+				text: "Moving through the bramble, a faint house is barely visible",
+				options: []
+			}
+		}
+		
+		let deathConversation = {
+			name: "You have died",
+			start: {
+				text: "Between the shores of life and death, but destined to be cast into the sea.<br> <i>Abandon all hope, those who enter</i>",
+				options: []
+			}
+		}
+	
+	
+		
+		let conversationNode = "start";
+		let conversationTree = PreLoad;
+		
+	//GLOBAL HELPERS
+	
+			const FRAMERATE  = 16; //AMOUNT OF MILLISECONDS BETWEEN CYCLES 16 = 60fps
+			
+			function isFullscreen(){
+				return(window.innerHeight == screen.height);
+			};
+			
+			function getRandomfromInt(max){
+				return Math.floor(Math.random() * max);
+			}
+				
+	//ENTITY CLASS		
+	
+			let mapLimits = {xMax: screen.width, xMin: 0, yMax: screen.height, yMin: 0};
+			
+			let EntityList = [];
+			
+			class Entity {
+				constructor(urlFolder, x, y, size, type, name){
+				this.urlFolder = urlFolder;
+				this.url = this.urlFolder + "/Front.png";
+				
+					
+				this.size = size; //Resolution of the sprite, width = size; height = size;
+				this.x = x;
+				this.y = y;
+				this.type = type;	
+				this.name = name;	//this will be the elements ID in the html
+				this.velocity = {x: 0, y: 0};
+				this.targetedPos = { x : 0, y : 0};
+				this.moveSpeed = 0.5;
+				this.distanceToTarget = {x: Math.abs(this.x - this.targetedPos.x), y: Math.abs(this.y - this.targetedPos.y)};
+				
+				this.facedDirection = "Back";
+					
+				this.onclickEnabled = false;
+				
+				this.wireFrameEnabled = true;
+					
+				this.attackPower = getRandomfromInt(10);
+				this.healthPoints = getRandomfromInt(1000);
+				
+				this.conversationTree = PreLoad;
+				
+				this.inventory = []; //Inventory Array
+				
+					//THIS MIGHT BE TEMPORARY
+						this.inventory.push( {name: "Gold", quantity: getRandomfromInt(100)});
+				
+				//We are automatically spawning the entity when we create it, but this might need to change
+				this.spawn();
+				}
+				
+				spawn(){
+				
+				//creating the sprite
+					const newSprite = document.createElement("div");
+					newSprite.className = "sprite";
+					this.SpriteInterval = setInterval( () => {
+						newSprite.style.width = this.size + "px";
+						newSprite.style.height = this.size + "px";
+						newSprite.style.backgroundImage = 'url("' + this.url + '")';
+					}, FRAMERATE);
+					
+					newSprite.style.top = this.y + "px";
+					newSprite.style.left = this.x + "px";
+					
+					//Creating a tooltip attached to the Sprite with an onhover event
+					
+					 const tooltip = document.createElement("div");
+					tooltip.className = "tooltip";
+					newSprite.appendChild(tooltip);
+					
+					
+					document.body.appendChild(newSprite);
+					newSprite.setAttribute("id", this.name);
+
+					
+					console.log("Spawned " + this.name)
+					
+					newSprite.addEventListener("mousedown", () =>  {
+								
+									this.toggleOnclick();
+											document.addEventListener('mousemove', (event) => {
+											const mouseX = event.clientX;
+											const mouseY = event.clientY;
+											// You can use mouseX and mouseY wherever needed in your code
+												if(this.onclickEnabled){
+												this.targetedPos = { x: mouseX - this.size / 2, y: mouseY - this.size / 2 };
+												};
+											});
+									});
+					
+					this.toolTipInterval = setInterval( () => {
+								tooltip.innerHTML = " ' " + this.name 
+											+ "' <br> HP : " + this.healthPoints 
+											+ " <br> X: " + Math.floor(this.x) + " <br> Y: " + Math.floor(this.y) 
+											+ "<br> Distance: " + Math.floor(this.distanceToTarget.x) + " " 
+											+ Math.floor(this.distanceToTarget.y) + "<br> TYPE: " + this.type +  " <br> ATTACK: " + this.attackPower ;
+					}, FRAMERATE);
+					
+					this.moveInterval = setInterval(() => { 
+								this.lastPos = {x: this.x, y: this.y};
+								this.x += this.velocity.x; this.y += this.velocity.y; 
+								
+								if(this.x > mapLimits.xMax || this.x < mapLimits.xMin){
+									this.x = this.lastPos.x;
+								};
+								
+								if(this.y > mapLimits.yMax || this.y < mapLimits.yMin){
+									this.y = this.lastPos.y;
+								};
+								
+									for(let i = 0; i < EntityList.length; i++){
+										if(EntityList[i].name === this.name){
+											//The entity we are comparing is the same, so dont do anything
+											
+										}else if( this.checkCollision( EntityList[i]) ){
+												this.x = this.lastPos.x;
+												this.y = this.lastPos.y;
+												
+												EntityList[i].x = EntityList[i].lastPos.x;
+												EntityList[i].y = EntityList[i].lastPos.y;
+												
+												this.targetedPos.x = this.x;
+												this.targetedPos.y = this.y;
+												
+												if(this.type === "Player"){
+													if(EntityList[i].type === "Monster"){
+														console.log("Interacting with Monster");
+														//"Fuck it lets make em fight" -Satoshi Tajiri
+														this.healthPoints -= EntityList[i].attackPower;
+														EntityList[i].healthPoints -= this.attackPower;
+														
+														if(this.healthPoints <= 0){
+																
+															}
+															if(EntityList[i].healthPoints <= 0){
+																
+																//Looting
+																for(let j = 0; j < EntityList[i].inventory.length; j++){
+																	
+																		
+																		EntityList[0].inventory.push(EntityList[i].inventory[j]);
+																	
+																		
+																}
+																InventoryDisplay.innerHTML = "Inventory : <br>";
+																for(let j = 0; j < EntityList[0].inventory.length; j++){
+																	InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
+																}
+																
+																
+																EntityList[i].remove();					
+																	conversationTree = FreshKill;
+																	conversationNode = "start";
+																	UpdateUI();
+																	
+																
+															}
+														
+														
+													};
+													
+													if(EntityList[i].type === "NPC"){
+														console.log("Interacting with NPC");
+														 //"only when a mosquito lands om your testicle, will you realise theres a way to solve a problem without using violence" -Confusius
+														 if(conversationTree != EntityList[i].conversationTree){
+														 conversationTree = EntityList[i].conversationTree;
+														 UpdateUI();
+														 }
+														
+														
+														
+													};
+												};
+												
+											};
+									};
+										
+								this.distanceToTarget = {x: Math.abs(this.x - this.targetedPos.x), y: Math.abs(this.y - this.targetedPos.y)};
+								this.updatePos() }, FRAMERATE); //So this says "Move it by velocity everytime"
+					
+					this.directionInterval = setInterval(() => {
+						// Change velocity toward the target
+						if (this.x < this.targetedPos.x) {
+							this.velocity.x = this.moveSpeed;
+						} else if (this.x > this.targetedPos.x) {
+							this.velocity.x = this.moveSpeed * -1;
+						}else {
+							
+							this.velocity.x = 0;
+						}
+
+						if (this.y < this.targetedPos.y) {
+							this.velocity.y =  this.moveSpeed;
+						} else if (this.y > this.targetedPos.y) {
+							this.velocity.y =  this.moveSpeed * -1;
+						} else {
+							this.velocity.y = 0;
+						}
+
+						// Change faced direction
+						if (Math.abs(this.distanceToTarget.x) > Math.abs(this.distanceToTarget.y)) {
+							if (this.targetedPos.x > this.x) {
+								this.facedDirection = "Right";
+								this.url = this.urlFolder + "/" + this.facedDirection + ".gif";
+							} else if (this.targetedPos.x < this.x) {
+								this.facedDirection = "Left";
+								this.url = this.urlFolder + "/" + this.facedDirection + ".gif";
+							}
+						} else if (Math.abs(this.distanceToTarget.y) > Math.abs(this.distanceToTarget.x)) {
+							if (this.targetedPos.y > this.y) {
+								this.facedDirection = "Front";
+								this.url = this.urlFolder + "/" + this.facedDirection + ".gif";
+							} else if (this.targetedPos.y < this.y) {
+								this.facedDirection = "Back";
+								this.url = this.urlFolder + "/" + this.facedDirection + ".gif";
+							}
+						} else {
+							this.url = this.urlFolder + "/idle/" + this.facedDirection + ".gif";
+						}
+					}, FRAMERATE);
+					this.keyBoardInterval = setInterval( () => {
+						if(pressedKeys["w"]){
+							EntityList[0].targetedPos.y = EntityList[0].y - 20;
+						}
+						if(pressedKeys["s"]){
+							EntityList[0].targetedPos.y = EntityList[0].y + 20;
+						}
+						if(pressedKeys["a"]){
+							EntityList[0].targetedPos.x = EntityList[0].x - 20;
+						}
+						if(pressedKeys["d"]){
+							EntityList[0].targetedPos.x = EntityList[0].x + 20;
+						}
+						
+						if(pressedKeys["SHIFT"]){
+							EntityList[0].moveSpeed = 3;
+						}else {
+							EntityList[0].moveSpeed = 1;
+						}
+							for(let i = 0; i < pressedKeys.length; i++){
+								pressedKeys[i] = false;
+							}
+						
+					}, FRAMERATE);
+							
+				}
+				
+				
+				
+				remove(){
+					const elementToRemove = document.getElementById(this.name);
+					if (elementToRemove) {
+						elementToRemove.parentNode.removeChild(elementToRemove);
+							clearInterval(this.toolTipInterval);
+							clearInterval(this.SpriteInterval);
+							clearInterval(this.moveInterval);
+							clearInterval(this.directionInterval);
+							clearInterval(this.keyBoardInterval);
+						}
+						 // Remove the entity from the EntityList
+							const index = EntityList.findIndex(entity => entity.name === this.name);
+							if (index !== -1) {
+								EntityList.splice(index, 1);
+							}
+				}
+				
+				updatePos(){
+					const targeted = document.getElementById(this.name);
+						
+					targeted.style.top = this.y + "px";
+					targeted.style.left = this.x + "px";
+					
+				}
+				
+				toggleOnclick(){				//Click Sprite once,it follows the mouse. Click again, stops following
+					if (this.onclickEnabled) {
+						this.onclickEnabled = false; 
+					} else {
+						this.onclickEnabled = true; 
+					}
+				}
+				toggleHitBox(){
+					if(this.wireFrameEnabled){
+						this.wireFrameEnabled = false;
+						document.getElementById(this.name).style.border = "none";
+					}else {
+						this.wireFrameEnabled = true;
+						document.getElementById(this.name).style.border = "1px solid black";
+					}
+				
+					
+				}
+				
+				checkCollision(otherEntity) {
+					const hitboxReductionPercentage = 0.5; // Adjust this value to reduce the hitbox by a certain percentage
+					const hitboxWidthReduction = this.size * (1 - hitboxReductionPercentage);
+					const hitboxHeightReduction = this.size * (1 - hitboxReductionPercentage);
+								
+				
+					const rect1 = {
+						x: this.x + hitboxWidthReduction / 2,
+						y: this.y + hitboxHeightReduction / 2,
+						width: this.size - hitboxWidthReduction,
+						height: this.size - hitboxHeightReduction
+					};
+					
+					const rect2 = {
+						x: otherEntity.x,
+						y: otherEntity.y,
+						width: otherEntity.size,
+						height: otherEntity.size
+					};
+
+					if (
+						rect1.x < rect2.x + rect2.width &&
+						rect1.x + rect1.width > rect2.x &&
+						rect1.y < rect2.y + rect2.height &&
+						rect1.y + rect1.height > rect2.y
+					) {
+						// Collision detected
+						return true;
+						
+					}else {
+						return false;
+					}
+				}
+				
+				
+			}
+			
+			//function to quickly remove all entities
+				function clearEntities(){
+					if (EntityList.length > 0) {
+						while (EntityList.length > 0) {
+							EntityList[0].remove();
+						}
+							// Add a confirmation or feedback for the user
+							console.log("Room cleared.");
+					} else {
+							// Add a message if there are no entities to remove
+							console.log("No entities to clear.");
+					}
+				}
+			
+			//ConversationMenu 
+			
+			
+			
+					  // Create the conversationDisplay div
+				var conversationDisplay = document.createElement('div');
+				conversationDisplay.id = 'conversationDisplay';
+				conversationDisplay.className = "contextMenu";
+				
+				var moveButton = document.createElement("button");
+				moveButton.id = "conversationMoveButton";
+				moveButton.textContent = "[^]";
+				
+				moveButton.style.position = "absolute";
+				moveButton.style.top = 0 + "px";
+				moveButton.style.left = 0 + "px";
+
+				// Create the first span element
+				var prompt = document.createElement('span');
+				prompt.textContent = 'Prompt';
+
+				// Create the second span element
+				var optionsDisplay = document.createElement('span');
+				optionsDisplay.textContent = 'Options';
+
+				// Append the span elements to the conversationDisplay div
+				conversationDisplay.appendChild(moveButton);
+				conversationDisplay.appendChild(prompt);
+				conversationDisplay.appendChild(optionsDisplay);
+
+				// Append the conversationDisplay div to the body
+				document.body.appendChild(conversationDisplay);
+				
+				conversationDisplay.OnclickEnabled = false;
+				
+				
+				
+				moveButton.onmousedown = function(){
+					console.log("Conversation Display mouse down");
+						if(conversationDisplay.OnclickEnabled){
+						conversationDisplay.OnclickEnabled = false;
+						}else {
+						conversationDisplay.OnclickEnabled = true;
+						}
+						document.addEventListener('mousemove', (event) => {
+									const mouseX = event.clientX;
+									const mouseY = event.clientY;
+									
+									
+									
+									// You can use mouseX and mouseY wherever needed in your code
+										if(conversationDisplay.OnclickEnabled){
+											conversationDisplay.style.top = (mouseY-25) + "px";
+											conversationDisplay.style.left = (mouseX-25) + "px";
+										}
+													
+						});
+					
+				}
+				conversationDisplay.onmouseup = function(){
+					console.log("Conversation Display mouse up");
+				}
+				
+				
+				
+								
+				function UpdateUI(){
+					prompt.innerHTML = conversationTree.name + " <br> " + conversationTree[conversationNode].text + "<br>";
+					
+					while(optionsDisplay.hasChildNodes()){
+							optionsDisplay.removeChild(optionsDisplay.firstChild);
+						};
+						
+							for(let i = 0; i < conversationTree[conversationNode].options.length; i++){
+								let button = document.createElement("button");
+								button.innerHTML = conversationTree[conversationNode].options[i].text;
+								button.setAttribute('id', "option"+i);
+								button.setAttribute('class', 'optionclass')
+								
+								optionsDisplay.appendChild(button);
+								
+								button.addEventListener("click",function(){
+									conversationNode = conversationTree[conversationNode].options[i].next;
+									UpdateUI();
+								});
+							
+							};
+				};
+				
+			//Inventory display	
+				var InventoryDisplay = document.createElement("div");
+				InventoryDisplay.id = "inventoryDisplay";
+				InventoryDisplay.className = "InvDisplay";
+				
+				
+				InventoryDisplay.style.position = "absolute";
+				InventoryDisplay.style.left = "50px";
+				InventoryDisplay.style.bottom = "50px";
+				
+				
+				document.body.appendChild(InventoryDisplay);
+				
+				
+	
+			
+			//DEV TOOLKIT
+			
+			class DevToolkit {
+				
+				constructor(){
+					this.element = document.createElement("div");
+					
+					this.element.className = "overlayDisplay";
+					
+				//SPAWN PLAYER BUTTON
+					this.spawnButton = document.createElement("button");
+					
+					this.spawnButton.innerHTML = "Spawn Player";
+						this.spawnButton.onclick = function(){
+							if (EntityList[0]) {
+								console.log("Player already spawned.");
+							} else {
+								// Spawn player sprite as EntityList[0]
+								EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
+								EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
+								
+								//Init Inventory
+								for(let j = 0; j < EntityList[0].inventory.length; j++){
+								InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
+								};
+							};
+						
+						}
+						this.element.appendChild(this.spawnButton);
+						
+				//SPAWN ROOM ONE 
+					
+					this.roomOneButton = document.createElement("button");
+					this.roomOneButton.innerHTML = "Generate Room One (EMPTY)";
+					this.roomOneButton.style.backgroundColor = "#FFA2A2";
+					
+					<!-- this.roomOneButton.onclick = function(){ -->
+							<!-- if(EntityList[0]){ -->
+								<!-- EntityList[1] = new Entity("Wendigoo", 200, 200, 400, "Monster", "Big Bad John"); -->
+								<!-- EntityList[1].targetedPos = { x: 200, y: 200 }; -->
+								<!-- EntityList[1].facedDirection = "right"; -->
+								<!-- EntityList[1].attackPower = 2; -->
+							<!-- }else { -->
+								<!-- console.log("Try spawning the player first..."); -->
+							<!-- }; -->
+						
+					<!-- }; -->
+					
+					this.element.appendChild(this.roomOneButton);
+					
+				//SPAWN ROOM TWO
+				
+					this.roomTwoButton = document.createElement("button");
+					this.roomTwoButton.innerHTML = "Generate Room Two (EMPTY)";
+					
+					this.roomTwoButton.style.backgroundColor = "#FFA2A2";
+					
+					
+					this.element.appendChild(this.roomTwoButton);
+					
+				//SPAWN ROOM THREE
+				
+					
+					this.roomThreeButton = document.createElement("button");
+					this.roomThreeButton.innerHTML = "Generate Room Three";
+					
+					this.roomThreeButton.onclick = function(){
+					
+					document.body.style.backgroundImage = "url(FunBackground.png)";
+							if(EntityList[0]){
+								EntityList[1] = new Entity("Wendigoo", 600, 100, 400, "Monster", "Jail Guard");
+								EntityList[1].targetedPos = {x:600, y:100};
+								EntityList[1].facedDirection = "Left";
+								EntityList[1].attackPower = 2;
+								
+							
+								EntityList[2] = new Entity("Wendigoo", 600, 600, 400, "Monster", "Jail guard");
+								EntityList[2].targetedPos = {x:600, y:600};
+								EntityList[2].facedDirection = "Left";
+								EntityList[2].attackPower = 2;
+								
+									
+								EntityList[3] = new Entity("Wendigoo", 1280, 175, 400, "NPC", "Prisoner");
+								EntityList[3].targetedPos = {x: 1280, y:175};
+								EntityList[3].facedDirection = "Front";
+								EntityList[3].attackPower = 1;
+									
+									EntityList[3].conversationTree = { start: "Huh? You killed those damn guards?? Thanks! I appreciate it!" };
+							}else {
+								console.log("Try spawning the player first...");
+							};
+						
+					};
+					
+					this.element.appendChild(this.roomThreeButton);
+						
+						
+				//SPAWN ROOM FOUR
+				
+				this.roomFourButton = document.createElement("button");
+					this.roomFourButton.innerHTML = "Generate Room Four";
+					
+					
+					
+					this.roomFourButton.onclick = function(){
+						conversationNode = "start";
+					conversationTree = InnerSanctum;
+					
+						for(let j = 0; j < EntityList[0].inventory.length; j++){
+							InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
+						};
+					
+						if(EntityList[0]){
+							document.body.style.backgroundImage = "url(ROOM.png)";
+							mapLimits = {xMax: 890, xMin: 666, yMax: 478, yMin: 228 };
+							
+							conversationTree = InnerSanctum;
+							UpdateUI();
+						
+							let doorInterval = setInterval(() => {
+								if(EntityList[0].y < 250){	//DOOR TO NEXT ROOM
+									document.body.style.backgroundImage = "url(secondROOM.png)";
+									mapLimits = {xMax: 1365, xMin: 220, yMax: 470, yMin: 135 }
+									EntityList[0].x = 800; EntityList[0].y = 470;
+									
+									
+										EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Tribal Communior");
+										EntityList[1].targetedPos = {x: 1328, y: 255};
+										EntityList[1].facedDirection = "Left";
+										EntityList[1].conversationTree = TribalLeader;
+										
+											conversationNode = "start";
+											conversationTree = InnerHall;
+											UpdateUI();
+											
+											let ConversationInterval = setInterval(() => {
+												if(conversationNode === "SpawnClone"){
+													EntityList[2] = new Entity("Wendigoo", 325, 285, 400, "Monster", "Clone of Tribal Communior");
+													EntityList[2].targetedPos = {x: 325, y: 285};
+													EntityList[2].facedDirection = "right";
+													
+													EntityList[2].inventory.push( {name: "Wendigo's Chain", quantity: 1} );
+													
+														
+													
+													clearInterval(ConversationInterval);
+												}
+												
+												if(conversationNode === "Disguise"){
+													EntityList[0].urlFolder = "Wendigoo";
+												}
+												
+											}, FRAMERATE);
+											
+									clearInterval(doorInterval);
+								}
+							}, FRAMERATE);
+						}else {
+							console.log("Try spawning the player first...");
+						}
+						
+					};
+					
+					this.element.appendChild(this.roomFourButton);
+					
+					
+				//ROOM FIVE
+
+					this.roomFiveButton = document.createElement("button");
+					this.roomFiveButton.innerHTML = "Generate Room Five";
+					
+					this.roomFiveButton.onclick = function(){
+					if(EntityList[0]){
+					
+						let deathInterval = setInterval(() => {
+							if(EntityList[0].healthPoints < 0){
+								//Show death zone
+									clearEntities();
+									
+									EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
+									EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
+									
+									document.body.style.backgroundImage = "url('DeathZone.png')";
+									
+									conversationTree = deathConversation;
+									conversationNode = "start";
+									UpdateUI();
+									clearInterval(deathInterval);
+							}
+						}, FRAMERATE);
+					
+						mapLimits = {xMax: 1500, xMin: 150, yMax: 575, yMin: 228 };
+					
+						document.body.style.backgroundImage = "url('OutsideHouse.png')";
+							
+						conversationNode = "start";
+						conversationTree = HouseExterior;
+						UpdateUI();
+						
+							EntityList[0].x = 550;
+							EntityList[0].y = 375;
+							
+							EntityList[0].targetedPos = {x : 550, y: 375 };
+							
+							EntityList[0].facedDirection = "right";
+							
+							let HouseCollision = setInterval(() => {
+								if(EntityList[0].x > 625 && EntityList[0].x < 1250 && EntityList[0].y < 400){
+									EntityList[0].x = EntityList[0].lastPos.x;
+									EntityList[0].y = EntityList[0].lastPos.y;
+								}
+							}, FRAMERATE);
+					//DOOR TO HOUSE
+							let outsideDoorInterval = setInterval(() => {
+								if(EntityList[0].x > 960 && EntityList[0].x < 1060 && EntityList[0].y < 426 && EntityList[0].y > 400){
+									document.body.style.backgroundImage = "url(ROOM.png)";
+									mapLimits = {xMax: 890, xMin: 666, yMax: 478, yMin: 228 };
+									EntityList[0].x = 750; EntityList[0].y = 320;
+									
+									conversationTree = InnerSanctum;
+									UpdateUI();
+									
+									clearInterval(HouseCollision);
+									clearInterval(outsideDoorInterval);
+									
+									let doorInterval = setInterval(() => {
+										if(EntityList[0].y < 250){	//DOOR TO NEXT ROOM
+											document.body.style.backgroundImage = "url(secondROOM.png)";
+											mapLimits = {xMax: 1365, xMin: 220, yMax: 470, yMin: 135 }
+											EntityList[0].x = 800; EntityList[0].y = 470;
+											EntityList[0].targetedPos.x = EntityList[0].x; EntityList[0].targetedPos.y = EntityList[0].y;
+											
+											
+											
+												EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Tribal Communior");
+												EntityList[1].targetedPos = {x: 1328, y: 255};
+												EntityList[1].facedDirection = "Left";
+												EntityList[1].conversationTree = TribalLeader;
+												
+													conversationNode = "start";
+													conversationTree = InnerHall;
+													UpdateUI();
+													
+													let ConversationInterval = setInterval(() => {
+														if(conversationNode === "SpawnClone"){
+															EntityList[2] = new Entity("Wendigoo", 325, 285, 400, "Monster", "Clone of Tribal Communior");
+															EntityList[2].targetedPos = {x: 325, y: 285};
+															EntityList[2].facedDirection = "right";
+															
+															EntityList[2].inventory.push( {name: "Wendigo's Chain", quantity: 1} );
+															
+															let chainInterval = setInterval(() => {
+																for( let i = 0; i < EntityList[0].inventory.length; i++){
+																	if(EntityList[0].inventory[i].name === "Wendigo's Chain"){
+																		EntityList[1].remove();
+																	
+																		EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Impressed Tribal Communior");
+																		EntityList[1].targetedPos = {x: 1328, y: 255};
+																		EntityList[1].facedDirection = "Left";
+																		EntityList[1].conversationTree = ImpressedTribalLeader;
+																		
+																		
+																		
+																		clearInterval(chainInterval);
+																	}
+																}
+															}, FRAMERATE);
+															
+															clearInterval(ConversationInterval);
+														}
+														
+														if(conversationNode === "Disguise"){
+															EntityList[0].urlFolder = "Wendigoo";
+														};
+														
+														if(conversationNode === "Convert"){
+															const ConvertIndex = EntityList[0].inventory.find( ( {name} ) => name === "Gold");
+															console.log(ConvertIndex);
+															EntityList[0].inventory.splice(ConvertIndex, 1);
+															EntityList[0].attackPower = ConvertIndex.quantity;
+															
+																InventoryDisplay.innerHTML = "Inventory : <br>";
+																for(let j = 0; j < EntityList[0].inventory.length; j++){
+																	InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
+																}
+															conversationNode = "start";
+														}
+														
+													}, FRAMERATE);
+													
+											clearInterval(doorInterval);
+										}
+									}, FRAMERATE);
+								}
+							}, FRAMERATE);
+							
+						
+							<!-- for(let j = 0; j < EntityList[0].inventory.length; j++){ -->
+								<!-- InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>"; -->
+							<!-- }; -->
+						
+					}else {
+						console.log("Try spawning the player first");
+					}
+					
+						
+					
+						
+					};
+					
+					this.element.appendChild(this.roomFiveButton);
+				
+				//CLEAR ROOM
+					
+					this.clearButton = document.createElement("button");
+					
+					this.clearButton.innerHTML = "Clear All Entities";
+					
+					this.clearButton.onclick = () => {
+						clearEntities();
+					};
+					
+						this.element.appendChild(this.clearButton);
+						
+				//Turn on all wireframes
+					this.wireFrameButton = document.createElement("button");
+					
+					this.wireFrameButton.innerHTML = "Show All Hitboxes";
+					
+					this.wireFrameButton.onclick = () => {
+						for(let i = 0; i < EntityList.length; i++){
+						//okay...so i am making it FALSE first because I am going to toggle it. That WILL be confusing and we WILL end up messing something up. Sucks to suck.
+							EntityList[i].wireFrameEnabled = false;
+							EntityList[i].toggleHitBox();
+						}
+					}
+					
+						this.element.appendChild(this.wireFrameButton);
+					
+					document.body.appendChild(this.element)
+					
+					
+					
+					this.isVisible = true;
+					this.toggleVisibility();
+					
+				
+					
+				
+				
+				}
+				
+				
+				
+				
+				
+				toggleVisibility(){						//Visibility of the Dev Toolkit
+					if (this.isVisible) {
+						this.element.style.display = "none"; // hide the element
+						this.isVisible = false; // update the visibility state
+					} else {
+						this.element.style.display = "block"; // show the element
+						this.isVisible = true; // update the visibility state
+					}
+				}
+				
+			}
+			let DevKit = new DevToolkit();
+			
+			
+			//Add a keylog listener
+			
+			document.body.addEventListener("keydown", (event) => {
+				console.log(event.key);
+				
+					if(event.key === "Escape"){
+						DevKit.toggleVisibility();
+					}
+			});
+			
+			
+			
+			let pressedKeys = [];
+			
+			document.body.addEventListener("keydown", (event) => {
+				
+				pressedKeys[event.key.toUpperCase()] = true;
+				pressedKeys[event.key.toLowerCase()] = true;
+			});
+			
+			document.body.addEventListener("keyup", (event) => {
+			
+				pressedKeys[event.key.toUpperCase()] = false;
+				pressedKeys[event.key.toLowerCase()] = false;
+				
+			})
+	
+			
+	
+			window.alert("Press Escape, press 'Spawn Player', press 'SPAWN ROOM FIVE', Try walking through the door!");
+			
+					
+			
+					
+				
+		</script>
+	</body>
+
+</html>
+
