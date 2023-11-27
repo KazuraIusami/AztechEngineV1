@@ -12,7 +12,6 @@
 		position: absolute;
 		background-size: cover;
 		background-position: center;
-		
 	}
 		
 	.tooltip {
@@ -42,7 +41,7 @@
 	.contextMenu {
 		position: absolute;
 		bottom:0;
-		right:0;
+		right:30px;
 		width:30%;
 		height:30%;
 		margin: 20px;
@@ -71,9 +70,12 @@
 		background-color: #7C7C7C;
 		opacity: 70%;
 		z-index: -1;
+		
 	}
-	.invDisplay {
-	
+	.InvDisplay {
+		position : absolute;
+		left : 50px;
+		bottom : 50px;
 	}
 		
 		
@@ -88,7 +90,8 @@
 		let PreLoad = {
 			name: "Thank you!",
 			start: {
-				text: "For a better experience, please press F11 to go fullscreen. <br> Press Escape to open the Dev Menu, then Press 'Spawn Player.' Then, press 'Generate Room Five'. You are able to go into the house! Among other things:) Just go ahead!"
+				text: "For a better experience, please press F11 to go fullscreen. <br> Press Escape to open the Dev Menu, then Press 'Spawn Player.' Then, press 'Room ONE', I really hope you enjoy!",
+				options: []
 			}
 		}
 		
@@ -131,7 +134,7 @@
 		let TribalLeader = {
 			name: "Tribal Leader",
 			start: {
-				text: "So it seems you've gotten this far. Great!",
+				text: "Oh by the way, my name is ironic. Kind of like the subway memes. My Brother in Christ, YOU made the sandwich",
 				options: [{text: "Who are you?", next: "WendigoGreet"}],
 				
 			},
@@ -145,7 +148,7 @@
 			},
 			Disguise: {
 				text: "Welcome to our commune, brother",
-				options: []
+				options: [{text: "Back", next: "start"}]
 			},
 			Convert: {
 				text: "As you wish...",
@@ -158,14 +161,22 @@
 			name: "Tribal Leader, slightly impressed",
 			start: {
 				text: "Huh...so you did it. You killed the clone of myself.",
-				options: [ {text: "Your clone dropped this chain...", next: "chain"} ]
+				options: [ {text: "Your clone dropped this chain...", next: "chain"}, {text: "His body...He lost his color", next: "color"} ]
 				},
 			chain: {
 				text: "Oh my....oh now that is interesting. Would you allow me to...see it for a moment?",
-				options: [ {text: "Allow", next: "allowChain"} ]
+				options: [ {text: "Allow", next: "allowChain"}, {text: "Refuse", next: "refuseChain"} ]
 			},
 			allowChain: {
 				text: "You gave me the chain",
+				options: []
+			},
+			refuseChain: {
+				text: "You didnt give me the chain.",
+				options: []
+			},
+			color: {
+				text: "Ah...So is the way of death in these parts. You go to the land of death and lose your color",
 				options: []
 			}
 		};
@@ -202,7 +213,21 @@
 			function getRandomfromInt(max){
 				return Math.floor(Math.random() * max);
 			}
-				
+			
+			
+	//CONTROLS
+
+		let WASDcontrols = {moveUp : "w",
+						moveDown: "s",
+						moveLeft: "a",
+						moveRight: "d"};
+						
+		let ArrowControls = {moveUp : "arrowup",
+						moveDown: "arrowdown",
+						moveLeft: "arrowleft",
+						moveRight: "arrowright"};
+						
+		let activeControls = WASDcontrols;
 	//ENTITY CLASS		
 	
 			let mapLimits = {xMax: screen.width, xMin: 0, yMax: screen.height, yMin: 0};
@@ -212,7 +237,7 @@
 			class Entity {
 				constructor(urlFolder, x, y, size, type, name){
 				this.urlFolder = urlFolder;
-				this.url = this.urlFolder + "/Front.png";
+				this.url = this.urlFolder + "/Front.gif";
 				
 					
 				this.size = size; //Resolution of the sprite, width = size; height = size;
@@ -241,7 +266,7 @@
 					//THIS MIGHT BE TEMPORARY
 						this.inventory.push( {name: "Gold", quantity: getRandomfromInt(100)});
 				
-				//We are automatically spawning the entity when we create it, but this might need to change
+				//THE ENTITY AUTOMATICALLY SPAWNS WHEN IT IS CALLED
 				this.spawn();
 				}
 				
@@ -326,32 +351,38 @@
 														this.healthPoints -= EntityList[i].attackPower;
 														EntityList[i].healthPoints -= this.attackPower;
 														
+														
+														
 														if(this.healthPoints <= 0){
+																console.log("Player had died");
+														};
+														
+														if(EntityList[i].healthPoints <= 0){
+															
+															//Looting
+															for(let j = 0; j < EntityList[i].inventory.length; j++){
 																
+																	
+																	EntityList[0].inventory.push(EntityList[i].inventory[j]);
+																
+																	
 															}
-															if(EntityList[i].healthPoints <= 0){
-																
-																//Looting
-																for(let j = 0; j < EntityList[i].inventory.length; j++){
-																	
-																		
-																		EntityList[0].inventory.push(EntityList[i].inventory[j]);
-																	
-																		
-																}
-																InventoryDisplay.innerHTML = "Inventory : <br>";
-																for(let j = 0; j < EntityList[0].inventory.length; j++){
-																	InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-																}
-																
-																
-																EntityList[i].urlFolder = "WendigoDeath";			
-																	conversationTree = FreshKill;
-																	conversationNode = "start";
-																	UpdateUI();
-																	
-																
+															
+															//Update Inventory
+															InventoryDisplay.innerHTML = "Inventory : <br>";
+															for(let j = 0; j < EntityList[0].inventory.length; j++){
+																InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
 															}
+															
+															
+															
+															EntityList[i].type = "Corpse";
+																conversationTree = FreshKill;
+																conversationNode = "start";
+																UpdateConversationDisplay();
+																
+															
+														}
 														
 														
 													};
@@ -361,7 +392,7 @@
 														 //"only when a mosquito lands om your testicle, will you realise theres a way to solve a problem without using violence" -Confusius
 														 if(conversationTree != EntityList[i].conversationTree){
 														 conversationTree = EntityList[i].conversationTree;
-														 UpdateUI();
+														 UpdateConversationDisplay();
 														 }
 														
 														
@@ -411,34 +442,14 @@
 								this.facedDirection = "Back";
 								this.url = this.urlFolder + "/" + this.facedDirection + ".gif";
 							}
-						} else {
+						} else if(this.healthPoints > 1) { 
 							this.url = this.urlFolder + "/idle/" + this.facedDirection + ".gif";
+						}else if(this.healthPoints <= 0){
+							this.url = this.urlFolder + "/death/" + this.facedDirection + ".gif";
+							
 						}
 					}, FRAMERATE);
-					this.keyBoardInterval = setInterval( () => {
-						if(pressedKeys["w"]){
-							EntityList[0].targetedPos.y = EntityList[0].y - 20;
-						}
-						if(pressedKeys["s"]){
-							EntityList[0].targetedPos.y = EntityList[0].y + 20;
-						}
-						if(pressedKeys["a"]){
-							EntityList[0].targetedPos.x = EntityList[0].x - 20;
-						}
-						if(pressedKeys["d"]){
-							EntityList[0].targetedPos.x = EntityList[0].x + 20;
-						}
-						
-						if(pressedKeys["SHIFT"]){
-							EntityList[0].moveSpeed = 3;
-						}else {
-							EntityList[0].moveSpeed = 1;
-						}
-							for(let i = 0; i < pressedKeys.length; i++){
-								pressedKeys[i] = false;
-							}
-						
-					}, FRAMERATE);
+					
 							
 				}
 				
@@ -453,6 +464,7 @@
 							clearInterval(this.moveInterval);
 							clearInterval(this.directionInterval);
 							clearInterval(this.keyBoardInterval);
+							clearInterval(this.deathInterval);
 						}
 						 // Remove the entity from the EntityList
 							const index = EntityList.findIndex(entity => entity.name === this.name);
@@ -525,7 +537,7 @@
 				
 			}
 			
-			//function to quickly remove all entities
+			//This function will clear ALL entities in the program, INCLUDING EntityList[0] WHICH IS USUALLY THE PLAYER
 				function clearEntities(){
 					if (EntityList.length > 0) {
 						while (EntityList.length > 0) {
@@ -575,9 +587,9 @@
 				conversationDisplay.OnclickEnabled = false;
 				
 				
-				
+				//Move Conversation Display by pressing the button
 				moveButton.onmousedown = function(){
-					console.log("Conversation Display mouse down");
+					console.log("Moving Conversation Display");
 						if(conversationDisplay.OnclickEnabled){
 						conversationDisplay.OnclickEnabled = false;
 						}else {
@@ -598,51 +610,218 @@
 						});
 					
 				}
-				conversationDisplay.onmouseup = function(){
-					console.log("Conversation Display mouse up");
-				}
 				
 				
 				
-								
-				function UpdateUI(){
+				
+				//Update the Conversation Display (PREVIOUSLY UpdateUI() )
+				function UpdateConversationDisplay(){
 					prompt.innerHTML = conversationTree.name + " <br> " + conversationTree[conversationNode].text + "<br>";
 					
+					//Remove all current nodes of options display
 					while(optionsDisplay.hasChildNodes()){
 							optionsDisplay.removeChild(optionsDisplay.firstChild);
 						};
+
+					//Create the new ones
+					for(let i = 0; i < conversationTree[conversationNode].options.length; i++){
+						const button = document.createElement("button");
+						button.innerHTML = conversationTree[conversationNode].options[i].text;
+						button.setAttribute('id', "option"+i);
+						button.setAttribute('class', 'optionclass')
 						
-							for(let i = 0; i < conversationTree[conversationNode].options.length; i++){
-								let button = document.createElement("button");
-								button.innerHTML = conversationTree[conversationNode].options[i].text;
-								button.setAttribute('id', "option"+i);
-								button.setAttribute('class', 'optionclass')
-								
-								optionsDisplay.appendChild(button);
-								
-								button.addEventListener("click",function(){
-									conversationNode = conversationTree[conversationNode].options[i].next;
-									UpdateUI();
-								});
-							
-							};
+						optionsDisplay.appendChild(button);
+						
+						button.addEventListener("click",function(){
+							conversationNode = conversationTree[conversationNode].options[i].next;
+							UpdateConversationDisplay();
+						});
+					
+					};
 				};
 				
+				conversationTree = PreLoad;
+				UpdateConversationDisplay();
+				
 			//Inventory display	
-				var InventoryDisplay = document.createElement("div");
+				const InventoryDisplay = document.createElement("div");
 				InventoryDisplay.id = "inventoryDisplay";
 				InventoryDisplay.className = "InvDisplay";
 				
 				
-				InventoryDisplay.style.position = "absolute";
-				InventoryDisplay.style.left = "50px";
-				InventoryDisplay.style.bottom = "50px";
-				
 				
 				document.body.appendChild(InventoryDisplay);
 				
+				function spawnPlayer(){
+					if (EntityList[0]) {
+								console.log("Player already spawned.");
+							} else {
+								// Spawn player sprite as EntityList[0]
+								EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
+								EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
+								
+								//Init Inventory
+								for(let j = 0; j < EntityList[0].inventory.length; j++){
+								InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
+								};
+								
+								EntityList[0].deathInterval = setInterval(() => {
+									if(EntityList[0].healthPoints < 0){
+										//Show death zone
+											
+											DeathRoom.generate();
+											
+											conversationTree = deathConversation;
+											conversationNode = "start";
+											UpdateConversationDisplay();
+											clearInterval(deathInterval);
+									}
+								}, FRAMERATE);
+								
+								EntityList[0].keyBoardInterval = setInterval( () => {
+									if(pressedKeys[activeControls.moveUp]){
+										EntityList[0].targetedPos.y = EntityList[0].y - 20;
+									}
+									if(pressedKeys[activeControls.moveDown]){
+										EntityList[0].targetedPos.y = EntityList[0].y + 20;
+									}
+									if(pressedKeys[activeControls.moveLeft]){
+										EntityList[0].targetedPos.x = EntityList[0].x - 20;
+									}
+									if(pressedKeys[activeControls.moveRight]){
+										EntityList[0].targetedPos.x = EntityList[0].x + 20;
+									}
+									
+									if(pressedKeys["SHIFT"]){
+										EntityList[0].moveSpeed = 3;
+									}else {
+										EntityList[0].moveSpeed = 1;
+									}
+										for(let i = 0; i < pressedKeys.length; i++){
+											pressedKeys[i] = false;
+										}
+									
+								}, FRAMERATE);
+					
+							};
+				};
 				
+				
+				
+				
+				//The room class is a subclass of Entity class.  This is kind of important, because this class is dependant on the entity class to spawn .
+				
+				class room {
+					constructor(imgUrl, outerLimits, EntitiesToSpawn, SpawnPoint, staticCollisions){
+						this.imgUrl = imgUrl;
+						this.outerLimits = outerLimits;
+						this.EntitiesToSpawn = EntitiesToSpawn;
+						this.SpawnPoint = SpawnPoint;
+						if(staticCollisions){
+							this.staticCollisions = staticCollisions;
+						};
+						
+					}
+					generate(){
+						
+						//So I WAS using ClearEntities() and then spawnPlayer(), but that would init inventory twice and thats not right
+						
+						for(let i = 1; i < EntityList.length; i++){
+							EntityList[i].remove();
+						}
+						<!-- clearEntities(); -->
+						<!-- spawnPlayer(); -->
+						
+						EntityList[0].x = this.SpawnPoint.x;
+						EntityList[0].y = this.SpawnPoint.y;
+						
+						EntityList[0].targetedPos = { x: this.SpawnPoint.x, y: this.SpawnPoint.y };
+						
+						mapLimits = this.outerLimits;
+						
+							for(let i = 0; i < this.EntitiesToSpawn.length; i++){
+								EntityList[i+1] = new Entity(	this.EntitiesToSpawn[i].urlFolder, 
+																this.EntitiesToSpawn[i].x, 
+																this.EntitiesToSpawn[i].y,
+																this.EntitiesToSpawn[i].size,
+																this.EntitiesToSpawn[i].type,
+																this.EntitiesToSpawn[i].name);
+								EntityList[i+1].targetedPos = {x: this.EntitiesToSpawn[i].x, y: this.EntitiesToSpawn[i].y};
+								
+								EntityList[i+1].facedDirection = this.EntitiesToSpawn[i].facedDirection;
+								
+								EntityList[i+1].conversationTree = this.EntitiesToSpawn[i].linkToConversationTree;
+							}
+						
+						
+							this.staticCollisionsInterval = setInterval(() => {
+								for(let i = 0; i < this.staticCollisions.length; i++){
+									if(EntityList[0].x > this.staticCollisions[i].xMin && EntityList[0].x < this.staticCollisions[i].xMax){
+										if(EntityList[0].y > this.staticCollisions[i].yMin && EntityList[0].y < this.staticCollisions[i].yMax){
+											EntityList[0].x = EntityList[0].lastPos.x;
+											EntityList[0].y = EntityList[0].lastPos.y;
+										}
+									}
+								}
+							}, FRAMERATE);
+						
+						
+						
+						
+						document.body.style.backgroundImage = "url(" + this.imgUrl + ")";
+						
+					}
+				}
+				
+				
+			let EmptyCollisions = [
+				//None
+				{xMin: 0, xMax: 1, yMin: 0, yMax: 1}, //No dude I promise there is a super rare treasure in this 1x1 pixel bro, go check it out bro i promise bro
+			];
+				let testStaticCollisions2 = [
+					{xMin: 650, xMax: 1260, yMin: 0, yMax: 440}, //HOUSE
+					{xMin: 490, xMax: 650, yMin: 50, yMax: 160} //TREE
+				];
 	
+				let EmptyEntitySet = [
+					//No enemies in first level
+				];
+				
+				
+				let testEntities2 = [
+					{urlFolder: "Wendigoo",
+					x:1300, y:400,
+					size: 400,
+					type:"Monster",
+					name:"Brother in Christ",
+					
+					facedDirection: "front",
+					linkToConversationTree: TribalLeader
+					},
+					
+					
+				];
+			
+			let generatedRoom1 = new room(	'OutsideHouse.png', 							//BACKGROUND IMAGE
+											{xMax: 1980, xMin: 0, yMax: 1280, yMin: 0 }, //MAP LIMITS
+											EmptyEntitySet, 									//ENEMY SET
+											{x: 550, y:375},								//SPAWN POINT
+											testStaticCollisions2);							//STATIC COLLISIONS				
+			let ritualRoom = new room(
+										"ROOM.png", 							//BACKGROUND IMAGE
+										{xMax: 920, xMin: 645, yMax: 475, yMin: 175 }, //MAP LIMITS
+										EmptyEntitySet,								//ENEMY SET
+										{x: 775, y:375},							//SPAWN POINT
+										EmptyCollisions)							//STATIC COLLISIONS
+										
+			let hallRoom = new room(
+										"SecondROOM.png", 							//BACKGROUND IMAGE
+										{xMax: 1376, xMin: 220, yMax: 475, yMin: 175 }, //MAP LIMITS
+										testEntities2,								//ENEMY SET
+										{x: 775, y:375},							//SPAWN POINT
+										EmptyCollisions)							//STATIC COLLISIONS
+											
+			let DeathRoom = new room('DeathZone.png',  {xMax: 890, xMin: 666, yMax: 478, yMin: 228 }, EmptyEntitySet, {x: 750, y:320}, EmptyCollisions);	//PLACE FOR DEATH							
 			
 			//DEV TOOLKIT
 			
@@ -656,290 +835,54 @@
 				//SPAWN PLAYER BUTTON
 					this.spawnButton = document.createElement("button");
 					
+					
 					this.spawnButton.innerHTML = "Spawn Player";
-						this.spawnButton.onclick = function(){
-							if (EntityList[0]) {
-								console.log("Player already spawned.");
-							} else {
-								// Spawn player sprite as EntityList[0]
-								EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
-								EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
-								
-								//Init Inventory
-								for(let j = 0; j < EntityList[0].inventory.length; j++){
-								InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-								};
-							};
+						this.spawnButton.addEventListener("click", spawnPlayer);
+					this.element.appendChild(this.spawnButton);
 						
-						}
-						this.element.appendChild(this.spawnButton);
-						
-				//SPAWN ROOM ONE 
-					
+				//ROOM ONE 
 					this.roomOneButton = document.createElement("button");
-					this.roomOneButton.innerHTML = "Generate Room One (EMPTY)";
-					this.roomOneButton.style.backgroundColor = "#FFA2A2";
+					this.roomOneButton.innerHTML = "Room ONE";
 					
-					this.roomOneButton.onclick = function(){
-							if(EntityList[0]){
-								EntityList[1] = new Entity("Wendigoo", 200, 200, 400, "Monster", "Big Bad John");
-								EntityList[1].targetedPos = { x: 200, y: 200 };
-								EntityList[1].facedDirection = "right";
-								EntityList[1].attackPower = 2;
-								
-								EntityList[0].x = 600; EntityList[0].y = 200;
-								EntityList[0].targetedPos = {x:600, y:200};
-							}else {
-								console.log("Try spawning the player first...");
-							};
+					this.roomOneButton.onclick = function() {
+						generatedRoom1.generate();
+						conversationTree = HouseExterior;
+						UpdateConversationDisplay();
 						
-					};
+							let doorInterval = setInterval( () => {
+								
+								if(EntityList[0].x > 960 && EntityList[0].x < 1060 && EntityList[0].y < 450 && EntityList[0].y > 400){
+									
+									conversationTree = InnerSanctum;
+									UpdateConversationDisplay();
+									
+									ritualRoom.generate();
+									clearInterval(generatedRoom1.staticCollisionsInterval)
+									clearInterval(doorInterval);
+								};
+								
+							}, FRAMERATE);
+							
+					}
 					
 					this.element.appendChild(this.roomOneButton);
 					
-				//SPAWN ROOM TWO
-				
+					
+				//ROOM TWO
 					this.roomTwoButton = document.createElement("button");
-					this.roomTwoButton.innerHTML = "Generate Room Two (EMPTY)";
+					this.roomTwoButton.innerHTML = "Room TWO";
 					
-					this.roomTwoButton.style.backgroundColor = "#FFA2A2";
-					
-					
-					this.element.appendChild(this.roomTwoButton);
-					
-				//SPAWN ROOM THREE
-				
-					
-					this.roomThreeButton = document.createElement("button");
-					this.roomThreeButton.innerHTML = "Generate Room Three";
-					
-					this.roomThreeButton.onclick = function(){
-					
-							if(EntityList[0]){
+					this.roomTwoButton.onclick = function() {
+						hallRoom.generate();
+						EntityList[1].healthPoints = 50;
+						EntityList[1].attackPower = 2;
+						
+						EntityList[0].healthPoints = 999;
+						EntityList[0].attackPower = 10;
 							
-							}else {
-								console.log("Try spawning the player first...");
-							};
-						
-					};
-					
-					this.element.appendChild(this.roomThreeButton);
-						
-						
-				//SPAWN ROOM FOUR
-				
-				this.roomFourButton = document.createElement("button");
-					this.roomFourButton.innerHTML = "Generate Room Four";
-					
-					
-					
-					this.roomFourButton.onclick = function(){
-						conversationNode = "start";
-					conversationTree = InnerSanctum;
-					
-						for(let j = 0; j < EntityList[0].inventory.length; j++){
-							InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-						};
-					
-						if(EntityList[0]){
-							document.body.style.backgroundImage = "url(ROOM.png)";
-							mapLimits = {xMax: 890, xMin: 666, yMax: 478, yMin: 228 };
-							
-							conversationTree = InnerSanctum;
-							UpdateUI();
-						
-							let doorInterval = setInterval(() => {
-								if(EntityList[0].y < 250){	//DOOR TO NEXT ROOM
-									document.body.style.backgroundImage = "url(secondROOM.png)";
-									mapLimits = {xMax: 1365, xMin: 220, yMax: 470, yMin: 135 }
-									EntityList[0].x = 800; EntityList[0].y = 470;
-									
-									
-										EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Tribal Communior");
-										EntityList[1].targetedPos = {x: 1328, y: 255};
-										EntityList[1].facedDirection = "Left";
-										EntityList[1].conversationTree = TribalLeader;
-										
-											conversationNode = "start";
-											conversationTree = InnerHall;
-											UpdateUI();
-											
-											let ConversationInterval = setInterval(() => {
-												if(conversationNode === "SpawnClone"){
-													EntityList[2] = new Entity("Wendigoo", 325, 285, 400, "Monster", "Clone of Tribal Communior");
-													EntityList[2].targetedPos = {x: 325, y: 285};
-													EntityList[2].facedDirection = "right";
-													
-													EntityList[2].inventory.push( {name: "Wendigo's Chain", quantity: 1} );
-													
-														
-													
-													clearInterval(ConversationInterval);
-												}
-												
-												if(conversationNode === "Disguise"){
-													EntityList[0].urlFolder = "Wendigoo";
-												}
-												
-											}, FRAMERATE);
-											
-									clearInterval(doorInterval);
-								}
-							}, FRAMERATE);
-						}else {
-							console.log("Try spawning the player first...");
-						}
-						
-					};
-					
-					this.element.appendChild(this.roomFourButton);
-					
-					
-				//ROOM FIVE
-
-					this.roomFiveButton = document.createElement("button");
-					this.roomFiveButton.innerHTML = "Generate Room Five";
-					
-					this.roomFiveButton.onclick = function(){
-					if(EntityList[0]){
-					
-						let deathInterval = setInterval(() => {
-							if(EntityList[0].healthPoints < 0){
-								//Show death zone
-									clearEntities();
-									
-									EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
-									EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
-									
-									document.body.style.backgroundImage = "url('DeathZone.png')";
-									
-									conversationTree = deathConversation;
-									conversationNode = "start";
-									UpdateUI();
-									clearInterval(deathInterval);
-							}
-						}, FRAMERATE);
-					
-						mapLimits = {xMax: 1500, xMin: 150, yMax: 575, yMin: 228 };
-					
-						document.body.style.backgroundImage = "url('OutsideHouse.png')";
-							
-						conversationNode = "start";
-						conversationTree = HouseExterior;
-						UpdateUI();
-						
-							EntityList[0].x = 550;
-							EntityList[0].y = 375;
-							
-							EntityList[0].targetedPos = {x : 550, y: 375 };
-							
-							EntityList[0].facedDirection = "right";
-							
-							let HouseCollision = setInterval(() => {
-								if(EntityList[0].x > 625 && EntityList[0].x < 1250 && EntityList[0].y < 400){
-									EntityList[0].x = EntityList[0].lastPos.x;
-									EntityList[0].y = EntityList[0].lastPos.y;
-								}
-							}, FRAMERATE);
-					//DOOR TO HOUSE
-							let outsideDoorInterval = setInterval(() => {
-								if(EntityList[0].x > 960 && EntityList[0].x < 1060 && EntityList[0].y < 426 && EntityList[0].y > 400){
-									document.body.style.backgroundImage = "url(ROOM.png)";
-									mapLimits = {xMax: 890, xMin: 666, yMax: 478, yMin: 228 };
-									EntityList[0].x = 750; EntityList[0].y = 320;
-									
-									conversationTree = InnerSanctum;
-									UpdateUI();
-									
-									clearInterval(HouseCollision);
-									clearInterval(outsideDoorInterval);
-									
-									let doorInterval = setInterval(() => {
-										if(EntityList[0].y < 250){	//DOOR TO NEXT ROOM
-											document.body.style.backgroundImage = "url(secondROOM.png)";
-											mapLimits = {xMax: 1365, xMin: 220, yMax: 470, yMin: 135 }
-											EntityList[0].x = 800; EntityList[0].y = 470;
-											EntityList[0].targetedPos.x = EntityList[0].x; EntityList[0].targetedPos.y = EntityList[0].y;
-											
-											
-											
-												EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Tribal Communior");
-												EntityList[1].targetedPos = {x: 1328, y: 255};
-												EntityList[1].facedDirection = "Left";
-												EntityList[1].conversationTree = TribalLeader;
-												
-													conversationNode = "start";
-													conversationTree = InnerHall;
-													UpdateUI();
-													
-													let ConversationInterval = setInterval(() => {
-														if(conversationNode === "SpawnClone"){
-															EntityList[2] = new Entity("Wendigoo", 325, 285, 400, "Monster", "Clone of Tribal Communior");
-															EntityList[2].targetedPos = {x: 325, y: 285};
-															EntityList[2].facedDirection = "right";
-															
-															EntityList[2].inventory.push( {name: "Wendigo's Chain", quantity: 1} );
-															
-															let chainInterval = setInterval(() => {
-																for( let i = 0; i < EntityList[0].inventory.length; i++){
-																	if(EntityList[0].inventory[i].name === "Wendigo's Chain"){
-																		EntityList[1].remove();
-																	
-																		EntityList[1] = new Entity("Wendigoo", 1328, 255, 400, "NPC", "Impressed Tribal Communior");
-																		EntityList[1].targetedPos = {x: 1328, y: 255};
-																		EntityList[1].facedDirection = "Left";
-																		EntityList[1].conversationTree = ImpressedTribalLeader;
-																		
-																		
-																		
-																		clearInterval(chainInterval);
-																	}
-																}
-															}, FRAMERATE);
-															
-															clearInterval(ConversationInterval);
-														}
-														
-														if(conversationNode === "Disguise"){
-															EntityList[0].urlFolder = "Wendigoo";
-														};
-														
-														if(conversationNode === "Convert"){
-															const ConvertIndex = EntityList[0].inventory.find( ( {name} ) => name === "Gold");
-															console.log(ConvertIndex);
-															EntityList[0].inventory.splice(ConvertIndex, 1);
-															EntityList[0].attackPower += ConvertIndex.quantity;
-															
-																InventoryDisplay.innerHTML = "Inventory : <br>";
-																for(let j = 0; j < EntityList[0].inventory.length; j++){
-																	InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-																}
-															conversationNode = "start";
-														}
-														
-													}, FRAMERATE);
-													
-											clearInterval(doorInterval);
-										}
-									}, FRAMERATE);
-								}
-							}, FRAMERATE);
-							
-						
-							<!-- for(let j = 0; j < EntityList[0].inventory.length; j++){ -->
-								<!-- InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>"; -->
-							<!-- }; -->
-						
-					}else {
-						console.log("Try spawning the player first");
 					}
 					
-						
-					
-						
-					};
-					
-					this.element.appendChild(this.roomFiveButton);
+					this.element.appendChild(this.roomTwoButton);
 				
 				//CLEAR ROOM
 					
@@ -952,6 +895,27 @@
 					};
 					
 						this.element.appendChild(this.clearButton);
+						
+						
+				//MOVEMENT button
+					this.controlsButton = document.createElement("button");
+					this.controlsButton.innerHTML = "CHANGE CONTROLS (WASD)";
+					
+					this.controlsButton.onclick = () => {
+						
+						if(activeControls === WASDcontrols){
+							activeControls = ArrowControls;
+							this.controlsButton.innerHTML = "CHANGE CONTROLS (ARROW)";
+							console.log("Switched to Arrow Controls");
+						}else {
+							activeControls = WASDcontrols;
+							this.controlsButton.innerHTML = "CHANGE CONTROLS (WASD)";
+							console.log("Switched to WASD Controls");
+						}
+						
+					};
+					
+					this.element.appendChild(this.controlsButton);
 						
 				//Turn on all wireframes
 					this.wireFrameButton = document.createElement("button");
@@ -974,16 +938,9 @@
 					
 					this.isVisible = true;
 					this.toggleVisibility();
-					
-				
-					
 				
 				
 				}
-				
-				
-				
-				
 				
 				toggleVisibility(){						//Visibility of the Dev Toolkit
 					if (this.isVisible) {
@@ -994,6 +951,10 @@
 						this.isVisible = true; // update the visibility state
 					}
 				}
+				
+				
+					
+					
 				
 			}
 			let DevKit = new DevToolkit();
@@ -1026,14 +987,9 @@
 				
 			})
 	
-			
 	
 			window.alert("Press Escape, press 'Spawn Player', press 'SPAWN ROOM FIVE', Try walking through the door!");
 			
-					
-			
-					
-				
 		</script>
 	</body>
 
