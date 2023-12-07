@@ -6,12 +6,14 @@
 	
 		body {
 			background-image: url('Background.png');
+			background-size: inherit;
 		}
 		
 	.sprite {
 		position: absolute;
 		background-size: cover;
 		background-position: center;
+		z-index: 0;
 	}
 		
 	.tooltip {
@@ -76,6 +78,20 @@
 		position : absolute;
 		left : 50px;
 		bottom : 50px;
+		width:30%;
+		height:30%;
+		background-color: #7c7c7c;
+		padding: 5px;
+		opacity: 70%;
+		display: inline;
+	}
+	.slot {
+		width: 30%;
+		height: 30%;
+		background-color: #9B9B9B;
+		text-align: center;
+		margin: 5px;
+		display: inline;
 	}
 		
 		
@@ -90,114 +106,42 @@
 		let PreLoad = {
 			name: "Thank you!",
 			start: {
-				text: "For a better experience, please press F11 to go fullscreen. <br> Press Escape to open the Dev Menu, then Press 'Spawn Player.' Then, press 'Room ONE', I really hope you enjoy!",
+				text: "For a better experience, please press F11 to go fullscreen. <br> Press Escape to open the Dev Menu, then Press 'Spawn Player.' Then, press 'BAR ROOM', I really hope you enjoy!",
 				options: []
 			}
 		}
 		
-		let FreshKill = {
-			name: "I...I killed it.",
-				start: {
-					text: "Whatever that...thing...was. I killed it.",
-					options: []
-				}
-		}
-	
-		let InnerSanctum = {
-			name: "The Sacred Temple, Inner Sanctum",
+		let BarTalk = {
+			name: "Wendigo",
 			start: {
-				
-				text: "<i>The hidden away core of the Sacred Temple. Very few are blessed (or cursed) enough to have the honor of seeing it.</i><br>The Information above is somehow known to you..although you arent sure how.",
-					options : [{text: "Notepad in your pocket", next: "list"}, {text: "Card displaying Gold", next: "goldCard"}]
-			},
-			list: {
-				text: "Pulling the notepad out of your front shirt pocket, flipping through the pages, you find nothing of value. <br> <i>Through broken pencil markings, maybe the work 'Lumen' is barely legible? It's still hard to tell</i>",
-				options : [{text: "back", next: "start"}]
-			},
-			goldCard: {
-				text: "In your front pants pocket is a slim, metal card with a display on the front. Multiple lines are visible, although only one is currently occupied.",
-				options: []
-			}
-		
-		}
-		
-		let InnerHall = {
-			name: "The Sacred Temple, Inner Hall",
-			start: {
-				
-				text: "Hall leading to the Inner Sanctum",
-					options : []
-			}
-		
-		}
-		
-		let TribalLeader = {
-			name: "Tribal Leader",
-			start: {
-				text: "Oh by the way, my name is ironic. Kind of like the subway memes. My Brother in Christ, YOU made the sandwich",
-				options: [{text: "Who are you?", next: "WendigoGreet"}],
-				
-			},
-			WendigoGreet: {
-				text: "You can call me Wendigo. I can serve as the Judge, Jury, and Executioner of your experience here.",
-				options: [{text: "Will You Spawn a Clone of yourself that I can fight?", next: "SpawnClone"}, {text: "I wish to dress as you", next: "Disguise"}, { text:" I wish to convert my gold to attack power", next: "Convert"},{text: "Back", next: "start"}]
-			},
-			SpawnClone: {
-				text: "Ah! A hasty one arent you? Alright, give it your best shot.",
-				options: [{text: "Back", next: "start"}],
-			},
-			Disguise: {
-				text: "Welcome to our commune, brother",
-				options: [{text: "Back", next: "start"}]
-			},
-			Convert: {
-				text: "As you wish...",
-				options: [{text: "Back", next: "start"}]
-			}
+				text: "Couldnt stay away from the drink, huh?",
+				options: [	{text: "Who are you?", next: "wendigoLore"},
+							{text: "How come I couldn't see you before?", next: "drunk"}]
 			
-		}
-		
-		let ImpressedTribalLeader = {
-			name: "Tribal Leader, slightly impressed",
-			start: {
-				text: "Huh...so you did it. You killed the clone of myself.",
-				options: [ {text: "Your clone dropped this chain...", next: "chain"}, {text: "His body...He lost his color", next: "color"} ]
-				},
-			chain: {
-				text: "Oh my....oh now that is interesting. Would you allow me to...see it for a moment?",
-				options: [ {text: "Allow", next: "allowChain"}, {text: "Refuse", next: "refuseChain"} ]
 			},
-			allowChain: {
-				text: "You gave me the chain",
-				options: []
-			},
-			refuseChain: {
-				text: "You didnt give me the chain.",
-				options: []
-			},
-			color: {
-				text: "Ah...So is the way of death in these parts. You go to the land of death and lose your color",
-				options: []
-			}
-		};
-		
-		let HouseExterior = {
-			name: "Stumbled on a house in the woods",
-			start: {
-				text: "Moving through the bramble, a faint house is barely visible",
-				options: []
+			wendigoLore: {
+				text: ""
 			}
 		}
 		
-		let deathConversation = {
-			name: "You have died",
+		let BeerTalk = {
+			name: "B &Sigma; 3 R",
 			start: {
-				text: "Between the shores of life and death, but destined to be cast into the sea.<br> <i>Abandon all hope, those who enter</i>",
-				options: []
+				text: "Its easy to get over the taste when your mind is focused on...other things.",
+				options: [	{text: "Take a drink", next: "drink"},
+							{text: "Read label", next: "label"}]
+			
+			},
+			drink: {
+				text: "<i> You swig from the bottle, gulping down a small drink to avoid the taste.</i> <br> The burn sinks down your throat and spreads out in your stomach.",
+				options: [{text: "Back", next: "start"}]
+			},
+			label: {
+				text: "B &Sigma; 3 R",
+				options: [{text: "Back", next: "start"}]
+			
 			}
 		}
-	
-	
 		
 		let conversationNode = "start";
 		let conversationTree = PreLoad;
@@ -215,6 +159,24 @@
 			}
 			
 			
+			function mergeInventoryArrays(arr1, arr2) {
+				// Loop through each item in the second array
+				arr2.forEach(item2 => {
+					// Check if the item already exists in the first array
+					const existingItem = arr1.find(item1 => item1.name === item2.name);
+
+					if (existingItem) {
+						// If the item already exists, merge the quantities
+						existingItem.quantity += item2.quantity;
+					} else {
+						// If the item does not exist, add it to the first array
+						arr1.push({ name: item2.name, quantity: item2.quantity });
+					}
+				});
+
+				return arr1;
+			}
+			
 	//CONTROLS
 
 		let WASDcontrols = {moveUp : "w",
@@ -228,10 +190,11 @@
 						moveRight: "arrowright"};
 						
 		let activeControls = WASDcontrols;
+		
+		let mapLimits = {xMax: screen.width, xMin: 0, yMax: screen.height, yMin: 0};
+		
 	//ENTITY CLASS		
 	
-			let mapLimits = {xMax: screen.width, xMin: 0, yMax: screen.height, yMin: 0};
-			
 			let EntityList = [];
 			
 			class Entity {
@@ -263,11 +226,9 @@
 				
 				this.inventory = []; //Inventory Array
 				
-					//THIS MIGHT BE TEMPORARY
-						this.inventory.push( {name: "Gold", quantity: getRandomfromInt(100)});
 				
 				//THE ENTITY AUTOMATICALLY SPAWNS WHEN IT IS CALLED
-				this.spawn();
+					this.spawn();
 				}
 				
 				spawn(){
@@ -284,7 +245,7 @@
 					newSprite.style.top = this.y + "px";
 					newSprite.style.left = this.x + "px";
 					
-					//Creating a tooltip attached to the Sprite with an onhover event
+					//Creating a tooltip attached to the Sprite with an onhover event inherited by the class
 					
 					 const tooltip = document.createElement("div");
 					tooltip.className = "tooltip";
@@ -297,8 +258,8 @@
 					
 					console.log("Spawned " + this.name)
 					
-					newSprite.addEventListener("mousedown", () =>  {
-								
+					newSprite.addEventListener("mousedown", () => {
+								if(this.type === "Player"){
 									this.toggleOnclick();
 											document.addEventListener('mousemove', (event) => {
 											const mouseX = event.clientX;
@@ -308,8 +269,15 @@
 												this.targetedPos = { x: mouseX - this.size / 2, y: mouseY - this.size / 2 };
 												};
 											});
-									});
-					
+									
+								}
+								
+								if(this.type === "Monster"){
+									this.healthPoints -= EntityList[0].attackPower;
+									
+										//TO DO: make this take into account both entities locations, check to see if they are within "combat range," if yes, attack, if no, dont.
+								}
+					});
 					this.toolTipInterval = setInterval( () => {
 								tooltip.innerHTML = " ' " + this.name 
 											+ "' <br> HP : " + this.healthPoints 
@@ -319,8 +287,17 @@
 					}, FRAMERATE);
 					
 					this.moveInterval = setInterval(() => { 
+					
+									//We want to hang on to the last position intervals in case the player wants to make a move they shouldnt be able to	
+										//In other words,when the player walks into a wall, we ARE letting them try to change their location, but	
+										//if that location isnt valid, set the current pos to the last pos
 								this.lastPos = {x: this.x, y: this.y};
+								
+									//Then we set the position to the current position plus velocity values
+								
 								this.x += this.velocity.x; this.y += this.velocity.y; 
+								
+									//Check if the new position is inside the map limits
 								
 								if(this.x > mapLimits.xMax || this.x < mapLimits.xMin){
 									this.x = this.lastPos.x;
@@ -354,28 +331,17 @@
 														
 														
 														if(this.healthPoints <= 0){
-																console.log("Player had died");
+																console.log("Player has died");
 														};
 														
 														if(EntityList[i].healthPoints <= 0){
 															
 															//Looting
-															for(let j = 0; j < EntityList[i].inventory.length; j++){
-																
-																	
-																	EntityList[0].inventory.push(EntityList[i].inventory[j]);
-																
-																	
-															}
 															
-															//Update Inventory
-															InventoryDisplay.innerHTML = "Inventory : <br>";
-															for(let j = 0; j < EntityList[0].inventory.length; j++){
-																InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-															}
+															mergeInventoryArrays(EntityList[0].inventory, EntityList[1].inventory);
 															
 															
-															
+															InventoryUI.update(EntityList[0]);
 															EntityList[i].type = "Corpse";
 																conversationTree = FreshKill;
 																conversationNode = "start";
@@ -394,8 +360,6 @@
 														 conversationTree = EntityList[i].conversationTree;
 														 UpdateConversationDisplay();
 														 }
-														
-														
 														
 													};
 												};
@@ -502,22 +466,27 @@
 				
 				checkCollision(otherEntity) {
 					const hitboxReductionPercentage = 0.5; // Adjust this value to reduce the hitbox by a certain percentage
+
+					// Calculate hitbox size for the current entity
 					const hitboxWidthReduction = this.size * (1 - hitboxReductionPercentage);
 					const hitboxHeightReduction = this.size * (1 - hitboxReductionPercentage);
-								
-				
+
+					// Calculate hitbox size for the other entity
+					const otherHitboxWidthReduction = otherEntity.size * (1 - hitboxReductionPercentage);
+					const otherHitboxHeightReduction = otherEntity.size * (1 - hitboxReductionPercentage);
+
 					const rect1 = {
 						x: this.x + hitboxWidthReduction / 2,
 						y: this.y + hitboxHeightReduction / 2,
 						width: this.size - hitboxWidthReduction,
 						height: this.size - hitboxHeightReduction
 					};
-					
+
 					const rect2 = {
-						x: otherEntity.x,
-						y: otherEntity.y,
-						width: otherEntity.size,
-						height: otherEntity.size
+						x: otherEntity.x + otherHitboxWidthReduction / 2,
+						y: otherEntity.y + otherHitboxHeightReduction / 2,
+						width: otherEntity.size - otherHitboxWidthReduction,
+						height: otherEntity.size - otherHitboxHeightReduction
 					};
 
 					if (
@@ -528,8 +497,7 @@
 					) {
 						// Collision detected
 						return true;
-						
-					}else {
+					} else {
 						return false;
 					}
 				}
@@ -552,9 +520,6 @@
 				}
 			
 			//ConversationMenu 
-			
-			
-			
 					  // Create the conversationDisplay div
 				var conversationDisplay = document.createElement('div');
 				conversationDisplay.id = 'conversationDisplay';
@@ -568,11 +533,11 @@
 				moveButton.style.top = 0 + "px";
 				moveButton.style.left = 0 + "px";
 
-				// Create the first span element
+				// Create the Prompt element
 				var prompt = document.createElement('span');
 				prompt.textContent = 'Prompt';
 
-				// Create the second span element
+				// Create the Options element
 				var optionsDisplay = document.createElement('span');
 				optionsDisplay.textContent = 'Options';
 
@@ -644,13 +609,29 @@
 				UpdateConversationDisplay();
 				
 			//Inventory display	
-				const InventoryDisplay = document.createElement("div");
-				InventoryDisplay.id = "inventoryDisplay";
-				InventoryDisplay.className = "InvDisplay";
 				
 				
+			//Inventory class	
+				class InventoryDisplay {
 				
-				document.body.appendChild(InventoryDisplay);
+					constructor(){
+						this.Display = document.createElement("div");
+						
+						this.Display.className = "InvDisplay";
+						
+								
+						document.body.appendChild(this.Display);
+					}
+					
+					update(targetInventory){
+						InventoryUI.Display.innerHTML = "INVENTORY OF " + targetInventory.name + "<br>";
+						for(let j = 0; j < targetInventory.inventory.length; j++){
+							InventoryUI.Display.innerHTML += " <div class='slot'> " + targetInventory.inventory[j].name + " ( " + targetInventory.inventory[j].quantity + " ) </div> ";
+						};
+					}
+				
+				}
+				let InventoryUI = new InventoryDisplay();
 				
 				function spawnPlayer(){
 					if (EntityList[0]) {
@@ -660,10 +641,12 @@
 								EntityList[0] = new Entity("Eugene", 771, 319, 400, "Player", "Eugene");
 								EntityList[0].targetedPos = { x: EntityList[0].x, y: EntityList[0].y };
 								
-								//Init Inventory
-								for(let j = 0; j < EntityList[0].inventory.length; j++){
-								InventoryDisplay.innerHTML += " " + EntityList[0].inventory[j].name + " ( " + EntityList[0].inventory[j].quantity + " ) <br>";
-								};
+								
+								
+								EntityList[0].inventory.push( {name: "Gold", quantity: getRandomfromInt(100)});
+								
+								
+								InventoryUI.update(EntityList[0]);
 								
 								EntityList[0].deathInterval = setInterval(() => {
 									if(EntityList[0].healthPoints < 0){
@@ -674,7 +657,7 @@
 											conversationTree = deathConversation;
 											conversationNode = "start";
 											UpdateConversationDisplay();
-											clearInterval(deathInterval);
+											clearInterval(EntityList[0].deathInterval);
 									}
 								}, FRAMERATE);
 								
@@ -752,7 +735,9 @@
 								
 								EntityList[i+1].conversationTree = this.EntitiesToSpawn[i].linkToConversationTree;
 							}
-						
+							
+							//Set the Z index of the player to be above everything else	
+								document.getElementById(EntityList[0].name).style.zIndex = 1;
 						
 							this.staticCollisionsInterval = setInterval(() => {
 								for(let i = 0; i < this.staticCollisions.length; i++){
@@ -772,56 +757,56 @@
 						
 					}
 				}
-				
-				
+			
 			let EmptyCollisions = [
-				//None
-				{xMin: 0, xMax: 1, yMin: 0, yMax: 1}, //No dude I promise there is a super rare treasure in this 1x1 pixel bro, go check it out bro i promise bro
+				{xMin: 0, xMax: 1, yMin: 0, yMax: 1}
 			];
-				let testStaticCollisions2 = [
-					{xMin: 650, xMax: 1260, yMin: 0, yMax: 440}, //HOUSE
-					{xMin: 490, xMax: 650, yMin: 50, yMax: 160} //TREE
-				];
-	
-				let EmptyEntitySet = [
-					//No enemies in first level
-				];
+			let EmptyEntitySet = [];
 				
-				
-				let testEntities2 = [
+			let barEntities = [
 					{urlFolder: "Wendigoo",
-					x:1300, y:400,
+					x:176, y:191,
 					size: 400,
-					type:"Monster",
-					name:"The Guy you will One Shot",
+					type:"NPC",
+					name:"Wendigo",
+					
+					facedDirection: "right",
+					linkToConversationTree: BarTalk
+					},
+					{urlFolder: "Beer",
+					x:835, y:212,
+					size: 200,
+					type:"NPC",
+					name:"Beer",
 					
 					facedDirection: "front",
-					linkToConversationTree: TribalLeader
+					linkToConversationTree: BeerTalk
 					},
-					
-					
-				];
+			];
 			
-			let generatedRoom1 = new room(	'OutsideHouse.png', 							//BACKGROUND IMAGE
-											{xMax: 1980, xMin: 0, yMax: 1280, yMin: 0 }, //MAP LIMITS
-											EmptyEntitySet, 									//ENEMY SET
-											{x: 550, y:375},								//SPAWN POINT
-											testStaticCollisions2);							//STATIC COLLISIONS				
-			let ritualRoom = new room(
-										"ROOM.png", 							//BACKGROUND IMAGE
-										{xMax: 920, xMin: 645, yMax: 475, yMin: 175 }, //MAP LIMITS
-										EmptyEntitySet,								//ENEMY SET
-										{x: 775, y:375},							//SPAWN POINT
-										EmptyCollisions)							//STATIC COLLISIONS
+			let barRoomCollision = [ 
+				{xMin: 0, xMax: 1, yMin: 0, yMax: 1} //TABLE
+			];
 										
-			let hallRoom = new room(
-										"SecondROOM.png", 							//BACKGROUND IMAGE
-										{xMax: 1376, xMin: 220, yMax: 475, yMin: 175 }, //MAP LIMITS
-										testEntities2,								//ENEMY SET
-										{x: 775, y:375},							//SPAWN POINT
-										EmptyCollisions)							//STATIC COLLISIONS
+			let BarRoom = new room(
+										"THEBAR.png", 							//BACKGROUND IMAGE
+										{xMax: 1980, xMin: 0, yMax: 1200, yMin:0 }, //MAP LIMITS
+										barEntities,								//ENEMY SET
+										{x:552, y:475},							//SPAWN POINT
+										barRoomCollision)							//STATIC COLLISIONS
+										
+			let BarRoomDark = new room(
+										"THEBARDARK.png", 							//BACKGROUND IMAGE
+										{xMax: 1980, xMin: 0, yMax: 1200, yMin:0 }, //MAP LIMITS
+										barEntities,								//ENEMY SET
+										{x:552, y:475},							//SPAWN POINT
+										barRoomCollision)							//STATIC COLLISIONS
+										
+						//TEMP VARIABLE
+							let drunkMeter = 0;
+			
 											
-			let DeathRoom = new room('DeathZone.png',  {xMax: 890, xMin: 666, yMax: 478, yMin: 228 }, EmptyEntitySet, {x: 750, y:320}, EmptyCollisions);	//PLACE FOR DEATH							
+			let DeathRoom = new room('DeathZone.png',  {xMax: screen.width, xMin: 0, yMax: screen.height, yMin: 0 }, EmptyEntitySet, {x: 750, y:320}, EmptyCollisions);	//PLACE FOR DEATH							
 			
 			//DEV TOOLKIT
 			
@@ -840,49 +825,54 @@
 						this.spawnButton.addEventListener("click", spawnPlayer);
 					this.element.appendChild(this.spawnButton);
 						
-				//ROOM ONE 
-					this.roomOneButton = document.createElement("button");
-					this.roomOneButton.innerHTML = "Room ONE";
+				//ROOM BUTTONS GO HERE
+				
+				//BAR ROOM WITH LIGHTS
+					this.barRoomButton = document.createElement("button");
 					
-					this.roomOneButton.onclick = function() {
-						generatedRoom1.generate();
-						conversationTree = HouseExterior;
-						UpdateConversationDisplay();
+					this.barRoomButton.innerHTML = "BAR ROOM";
+					
+					this.barRoomButton.onclick = () => {
+						BarRoom.generate();
 						
-							let doorInterval = setInterval( () => {
-								
-								if(EntityList[0].x > 960 && EntityList[0].x < 1060 && EntityList[0].y < 450 && EntityList[0].y > 400){
-									
-									conversationTree = InnerSanctum;
-									UpdateConversationDisplay();
-									
-									ritualRoom.generate();
-									clearInterval(generatedRoom1.staticCollisionsInterval)
-									clearInterval(doorInterval);
-								};
-								
-							}, FRAMERATE);
-							
-					}
-					
-					this.element.appendChild(this.roomOneButton);
-					
-					
-				//ROOM TWO
-					this.roomTwoButton = document.createElement("button");
-					this.roomTwoButton.innerHTML = "Room TWO";
-					
-					this.roomTwoButton.onclick = function() {
-						hallRoom.generate();
-						EntityList[1].healthPoints = 50;
-						EntityList[1].attackPower = 2;
+						let drinkingInterval = setInterval( () => {
+									if(conversationNode === "drink"){
+										drunkMeter += 0.1;
+										conversationNode = "label";
+										UpdateConversationDisplay();
+										
+									}
+								}, FRAMERATE);
 						
-						EntityList[0].healthPoints = 999;
-						EntityList[0].attackPower = 10;
-							
+						let DrunkInterval = setInterval(() => {
+									document.getElementById("Wendigo").style.opacity = drunkMeter;
+								}, FRAMERATE);
 					}
+					this.element.appendChild(this.barRoomButton);
 					
-					this.element.appendChild(this.roomTwoButton);
+					
+					//BAR ROOM WITH LIGHTS OFF
+					this.barRoomDarkButton = document.createElement("button");
+					
+					this.barRoomDarkButton.innerHTML = "BAR ROOM (LIGHTS OFF)";
+					
+					this.barRoomDarkButton.onclick = () => {
+						BarRoomDark.generate();
+						
+						let drinkingInterval = setInterval( () => {
+									if(conversationNode === "drink"){
+										drunkMeter += 0.1;
+										conversationNode = "label";
+										UpdateConversationDisplay();
+										
+									}
+								}, FRAMERATE);
+						
+						let DrunkInterval = setInterval(() => {
+									document.getElementById("Wendigo").style.opacity = drunkMeter;
+								}, FRAMERATE);
+					}
+					this.element.appendChild(this.barRoomDarkButton);
 				
 				//CLEAR ROOM
 					
@@ -988,7 +978,7 @@
 			})
 	
 	
-			window.alert("Press Escape, press 'Spawn Player', press 'SPAWN ROOM FIVE', Try walking through the door!");
+			window.alert("Press Escape, press 'Spawn Player', press 'BAR ROOM'");
 			
 		</script>
 	</body>
